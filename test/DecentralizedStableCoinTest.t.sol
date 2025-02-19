@@ -11,7 +11,7 @@ contract DecentralizedStableCoinTest is Test {
     DecentralizedStableCoin dsc;
 
     function setUp() public {
-        dsc = new DecentralizedStableCoin(msg.sender);
+        dsc = new DecentralizedStableCoin();
     }
 
     function testMustMintMoreThanZero() public {
