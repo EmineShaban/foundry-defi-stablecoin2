@@ -125,7 +125,7 @@ import {AggregatorV3Interface} from "lib/chainlink-brownie-contracts/contracts/s
         }
     }
 
-    function burnDsc(uint256 amount) external moreThanZero(amount) {
+    function burnDsc(uint256 amount) public moreThanZero(amount) {
         _burnDsc(amount, msg.sender, msg.sender);
         _revertIfHealthFactorIsBroken(msg.sender);
     }
@@ -140,7 +140,7 @@ import {AggregatorV3Interface} from "lib/chainlink-brownie-contracts/contracts/s
             revert DSCEngine__HealthFactorOk();
         }
 
-        uint256 tokenAmountFromDebtToCovered = getTokenAmountFromUsd(debtToCov, collateral);
+        uint256 tokenAmountFromDebtToCovered = getTokenAmountFromUsd(collateral, debtToCov);
 
         uint256 bonusCollateral = (tokenAmountFromDebtToCovered * LIQUIDATION_BONUS) / LIQUIDATION_PRECISION;
         uint256 totalCollateralToRedeem = tokenAmountFromDebtToCovered + bonusCollateral;
@@ -148,7 +148,7 @@ import {AggregatorV3Interface} from "lib/chainlink-brownie-contracts/contracts/s
         _burnDsc(debtToCov, user, msg.sender);
 
         uint256 endingUserHelthFactor = _healthFactor(user);
-        if (startingUserHelthFactor <= startingUserHelthFactor) {
+        if (endingUserHelthFactor <= startingUserHelthFactor) {
             revert DSCEngine__HealthFactorIsNotImprove();
         }
         _revertIfHealthFactorIsBroken(msg.sender);
@@ -209,7 +209,7 @@ import {AggregatorV3Interface} from "lib/chainlink-brownie-contracts/contracts/s
     /////////////////////////////////////////
 
     function getTokenAmountFromUsd(address token, uint256 usdAmountInWei) public view returns (uint256) {
-        AgrergatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
         (, int256 price,,,) = priceFeed.latestRoundData();
         return (usdAmountInWei * PRECISION) / (uint256(price) / ADDITIONAL_FEED_PRECISION);
     }
