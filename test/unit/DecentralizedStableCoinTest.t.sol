@@ -3,7 +3,7 @@ pragma solidity ^0.8.18;
 
 import {console} from "forge-std/Script.sol";
 import {Test} from "forge-std/Test.sol";
-import {DecentralizedStableCoin} from "../src/DecentralizedStableCoin.sol";
+import {DecentralizedStableCoin} from "../../src/DecentralizedStableCoin.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {StdCheats} from "forge-std/StdCheats.sol";
 
