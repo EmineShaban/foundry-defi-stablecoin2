@@ -12,7 +12,6 @@ import {StdCheats} from "forge-std/StdCheats.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract DSCEngineTest is Test {
-
     DeployDSC deployer;
     DecentralizedStableCoin dsc;
     DSCEngine dsce;
@@ -23,7 +22,6 @@ contract DSCEngineTest is Test {
     address public USER = makeAddr("user");
     uint256 public constant AMOUNT_COLLATERAL = 10 ether;
 
-
     function setUp() public {
         deployer = new DeployDSC();
         (dsc, dsce, config) = deployer.run();
@@ -31,45 +29,30 @@ contract DSCEngineTest is Test {
         // ERC20Mock(weth).mint(USER, 10 ether);
     }
 
-/////////////////
-// Price Tests //
-/////////////////
+    /////////////////
+    // Price Tests //
+    /////////////////
 
-function testGetUsdValue() public {
-    // 15e18 * 2,000/ETH = 30,000e18
-    uint256 ethAmount = 15e18;
-    uint256 expectedUsd = 30000e18;
-    uint256 actualUsd = dsce.getUsdValue(weth, ethAmount);
-    assertEq(expectedUsd, actualUsd);
-}
+    function testGetUsdValue() public {
+        // 15e18 * 2,000/ETH = 30,000e18
+        uint256 ethAmount = 15e18;
+        uint256 expectedUsd = 30000e18;
+        uint256 actualUsd = dsce.getUsdValue(weth, ethAmount);
+        assertEq(expectedUsd, actualUsd);
+    }
 
+    /////////////////////////////
+    // depositCollateral Tests //
+    /////////////////////////////
 
- /////////////////////////////
-// depositCollateral Tests //
-/////////////////////////////
+    function testRevertsIfCollateralZero() public {
+        vm.startPrank(USER);
+        ERC20Mock(weth).approve(address(dsce), AMOUNT_COLLATERAL);
 
-function testRevertsIfCollateralZero() public {
-    vm.startPrank(USER);
-    ERC20Mock(weth).approve(address(dsce), AMOUNT_COLLATERAL);
-
-    vm.expectRevert(DSCEngine.DSCEngine__NeedsMoreThanZero.selector);
-    dsce.depositCollateral(weth, 0);
-    vm.stopPrank();
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        vm.expectRevert(DSCEngine.DSCEngine__NeedsMoreThanZero.selector);
+        dsce.depositCollateral(weth, 0);
+        vm.stopPrank();
+    }
 }
 
 // DSCEngine public dsce;
@@ -134,4 +117,3 @@ function testRevertsIfCollateralZero() public {
 // function testCanDepositCollateralWithoutMinting() public depositedCollateral {}
 
 // function testCanDepositedCollateralAndGetAccountInfo() public depositedCollateral {}
-
