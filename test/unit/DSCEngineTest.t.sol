@@ -68,7 +68,7 @@ contract DSCEngineTest is Test {
     }
 
     /////////////////////////////
-    // depositCollateral Tests //
+    // depositedCollateral Tests //
     /////////////////////////////
 
     function testRevertsIfCollateralZero() public {
@@ -80,7 +80,7 @@ contract DSCEngineTest is Test {
         vm.stopPrank();
     }
 
-    modifier depositCollateral() {
+    modifier depositedCollateral() {
         vm.startPrank(USER);
         ERC20Mock(weth).approve(address(dsce), AMOUNT_COLLATERAL);
         dsce.depositCollateral(weth, AMOUNT_COLLATERAL);
@@ -88,76 +88,91 @@ contract DSCEngineTest is Test {
         _;
     }
 
-    function testCanDepositCollateralAndGetAccountInfo() public depositCollateral {
+    function testCandepositedCollateralAndGetAccountInfo() public depositedCollateral {
         (uint256 totalDscMinted, uint256 collateralValueInUsd) = dsce.getAccountInformation(USER);
-
-        uint256 expectedTotalDscMinted = 0;
-
         uint256 expectedDepositAmount = dsce.getTokenAmountFromUsd(weth, collateralValueInUsd);
-
         assertEq(AMOUNT_COLLATERAL, expectedDepositAmount);
     }
+
+    function testCandepositedCollateralWithoutMinting() public depositedCollateral {
+        uint256 expectedTotalDscMinted = 0;
+        uint256 userBalance = dsc.balanceOf(USER);
+        assertEq(expectedTotalDscMinted, userBalance);
+    }
+
+    ///////////////////////////////////////
+    // depositedCollateralAndMintDsc Tests //
+    ///////////////////////////////////////
+
+    function testRevertsIfMintedDscBreaksHealthFactor() public {}
+
+    modifier depositedCollateralAndMintedDsc() {
+        vm.startPrank(USER);
+        ERC20Mock(weth).approve(address(dsce), AMOUNT_COLLATERAL);
+        dsce.depositCollateralAndMintDsc(weth, AMOUNT_COLLATERAL, amountToMint);
+        vm.stopPrank();
+        _;
+    }
+
+    function testCanMintWithDepositedCollateral() public depositedCollateralAndMintedDsc {
+        uint256 userBalance = dsc.balanceOf(USER);
+        assertEq(userBalance, amountToMint);
+    }
+
+    ///////////////////////////////////
+    // mintDsc Tests //
+    ///////////////////////////////////
+
+    // This test needs it's own custom setup
+    function testRevertsIfMintFails() public {}
+
+    function testRevertsIfMintAmountIsZero() public {
+        vm.startPrank(USER);
+        ERC20Mock(weth).approve(address(dsce), AMOUNT_COLLATERAL);
+        dsce.depositCollateralAndMintDsc(weth, AMOUNT_COLLATERAL, amountToMint);
+        vm.expectRevert(DSCEngine.DSCEngine__NeedsMoreThanZero.selector);
+        dsce.mintDsc(0);
+        vm.stopPrank();
+    }
+
+    function testRevertsIfMintAmountBreaksHealthFactor() public depositedCollateral {}
+
+    function testCanMintDsc() public depositedCollateral {
+        vm.startPrank(USER);
+        dsce.mintDsc(amountToMint);
+        uint256 userBalance = dsc.balanceOf(USER);
+        assertEq(userBalance, amountToMint);
+    }
+
+
+    ///////////////////////////////////
+    // burnDsc Tests //
+    ///////////////////////////////////
+
+    function testRevertsIfBurnAmountIsZero() public {
+        vm.startPrank(USER);
+        ERC20Mock(weth).approve(address(dsce), AMOUNT_COLLATERAL);
+        dsce.depositCollateralAndMintDsc(weth, AMOUNT_COLLATERAL, amountToMint);
+        vm.expectRevert(DSCEngine.DSCEngine__NeedsMoreThanZero.selector);
+        dsce.burnDsc(0);
+        vm.stopPrank();
+    }
+
+    function testCantBurnMoreThanUserHas() public {
+       vm.startPrank(USER);
+       vm.expectRevert();
+       dsce.burnDsc(1);
+    }
+
+    function testCanBurnDsc() public depositedCollateralAndMintedDsc {
+        //  vm.startPrank(USER);
+        // ERC20Mock(weth).approve(address(dsce), AMOUNT_COLLATERAL);
+        // dsce.depositCollateralAndMintDsc(weth, AMOUNT_COLLATERAL, amountToMint);
+        //  dsce.burnDsc(amountToMint);
+        // vm.stopPrank();
+
+        //  uint256 userBalance = dsc.balanceOf(USER);
+        // assertEq(userBalance, 0);
+    }
+
 }
-
-// DSCEngine public dsce;
-// DecentralizedStableCoin public dsc;
-// HelperConfig public helperConfig;
-
-// address public ethUsdPriceFeed;
-// address public btcUsdPriceFeed;
-// address public weth;
-// address public wbtc;
-// uint256 public deployerKey;
-
-// uint256 amountCollateral = 10 ether;
-// uint256 amountToMint = 100 ether;
-// address public user = address(1);
-
-// uint256 public constant STARTING_USER_BALANCE = 10 ether;
-// uint256 public constant MIN_HEALTH_FACTOR = 1e18;
-// uint256 public constant LIQUIDATION_THRESHOLD = 50;
-
-// function setUp() external {
-//     DeployDSC deployer = new DeployDSC();
-//     (dsc, dsce, helperConfig) = deployer.run();
-//     (ethUsdPriceFeed, btcUsdPriceFeed, weth, wbtc, deployerKey) = helperConfig.activeNetworkConfig();
-//     if (block.chainid == 31_337) {
-//         vm.deal(user, STARTING_USER_BALANCE);
-//     }
-//     // Should we put our integration tests here?
-//     // else {
-//     //     user = vm.addr(deployerKey);
-//     //     ERC20Mock mockErc = new ERC20Mock("MOCK", "MOCK", user, 100e18);
-//     //     MockV3Aggregator aggregatorMock = new MockV3Aggregator(
-//     //         helperConfig.DECIMALS(),
-//     //         helperConfig.ETH_USD_PRICE()
-//     //     );
-//     //     vm.etch(weth, address(mockErc).code);
-//     //     vm.etch(wbtc, address(mockErc).code);
-//     //     vm.etch(ethUsdPriceFeed, address(aggregatorMock).code);
-//     //     vm.etch(btcUsdPriceFeed, address(aggregatorMock).code);
-//     // }
-//     ERC20Mock(weth).mint(user, STARTING_USER_BALANCE);
-//     ERC20Mock(wbtc).mint(user, STARTING_USER_BALANCE);
-// }
-// ///////////////////////////////////////
-// // depositCollateral Tests //
-// ///////////////////////////////////////
-
-// // this test needs it's own setup
-// function testRevertsIfTransferFromFails() public {
-//     // Arrange - Setup
-// }
-
-// function testRevertsIfCollateralZero() public {
-//     vm.prank(user);
-//     ERC20Mock(weth).approve(address(dsce), amountCollateral);
-// }
-
-// function testRevertsWithUnapprovedCollateral() public {}
-
-// modifier depositedCollateral() {}
-
-// function testCanDepositCollateralWithoutMinting() public depositedCollateral {}
-
-// function testCanDepositedCollateralAndGetAccountInfo() public depositedCollateral {}
