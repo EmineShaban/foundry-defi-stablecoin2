@@ -144,7 +144,6 @@ contract DSCEngineTest is Test {
         assertEq(userBalance, amountToMint);
     }
 
-
     ///////////////////////////////////
     // burnDsc Tests //
     ///////////////////////////////////
@@ -159,9 +158,9 @@ contract DSCEngineTest is Test {
     }
 
     function testCantBurnMoreThanUserHas() public {
-       vm.startPrank(USER);
-       vm.expectRevert();
-       dsce.burnDsc(1);
+        vm.startPrank(USER);
+        vm.expectRevert();
+        dsce.burnDsc(1);
     }
 
     function testCanBurnDsc() public depositedCollateralAndMintedDsc {
@@ -174,5 +173,4 @@ contract DSCEngineTest is Test {
         //  uint256 userBalance = dsc.balanceOf(USER);
         // assertEq(userBalance, 0);
     }
-
 }
