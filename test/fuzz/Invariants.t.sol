@@ -9,6 +9,7 @@ import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {DSCEngine} from "../../src/DSCEngine.sol";
 import {StdInvariant} from "forge-std/StdInvariant.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Handler} from "./Handler.t.sol";
 
 contract Invariants is StdInvariant, Test {
     DeployDSC deployer;
@@ -17,12 +18,14 @@ contract Invariants is StdInvariant, Test {
     HelperConfig config;
     address weth;
     address wbtc;
+    Handler handler;
 
     function setUp() public {
         deployer = new DeployDSC();
         (dsc, dsce, config) = deployer.run();
         (,, weth, wbtc,) = config.activeNetworkConfig();
-        targetContract(address(dsce));
+        handler = new Handler(dsce, dsc);
+        targetContract(address(handler));
     }
 
     function invariants_protocolMustHaveMoreValueThantotalSupply() public view {
